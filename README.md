@@ -109,6 +109,63 @@ When a user moves between cells:
 
 ---
 
+## 🔧 Implementation Deep Dives
+
+### 1. gNodeB & Sectors
+A real cell tower splits its antenna into 3 sectors (each 120°). Each sector is an independent transmitter with a directional antenna. This triples capacity at one physical location. The implementation uses sector selection based on bearing angle to properly model this realistic behavior.
+
+### 2. Gauss-Markov Mobility
+Pure random walk produces jerky, unrealistic paths. Gauss-Markov adds velocity memory — the next velocity is a weighted blend of current velocity, a mean drift, and noise. The alpha parameter controls how much the UE "remembers" its current heading:
+- **alpha = 0**: Pure random walk (very jerky)
+- **alpha = 1**: Straight line (no turning)
+- **alpha = 0.75**: Smooth, realistic pedestrian/vehicle paths
+
+With alpha=0.75, the model generates movement that closely resembles real-world user equipment behavior.
+
+### 3. SINR — The Real Performance Metric
+**RSRP** (raw signal strength) tells you how loud one tower is. **SINR** tells you how well you can hear that tower over all the other noise:
+
+```
+SINR = Signal / (Interference + Noise)
+```
+
+**Key insight from the simulation**: SINR drops sharply at cell edges where two towers overlap. At those points your serving tower's signal is strong, but so is the interferer — the ratio collapses. This is why handovers exist.
+
+### 4. Shannon Throughput
+The theoretical upper bound on data rate is given by the Shannon-Hartley theorem:
+
+```
+Throughput = Bandwidth × log₂(1 + SINR)
+```
+
+The implementation applies a 0.7 efficiency factor for real-world overhead (headers, retransmissions, guard intervals). Notice how throughput tracks SINR almost perfectly — SINR is the single most important number in wireless.
+
+### 5. Handover & Ping-Pong (and how we fixed it)
+
+#### The A3 Event
+3GPP's standard handover trigger:
+```
+HO when: RSRP_neighbor > RSRP_serving + A3_offset
+```
+The A3_offset (3 dB here) means the neighbor must be meaningfully better, not just marginally.
+
+#### Bug 1: Stochastic LoS Flipping
+**Problem**: The 3GPP propagation model randomly decides LoS vs NLoS each time it's called. Two calls for the same tower at the same position could return values 20 dB apart. This caused RSRP to jump wildly within a single tick, triggering and then immediately cancelling handovers.
+
+**Fix**: We added a per-tick measurement cache (`_tick_cache`). All RSRP readings for one tick come from a single call per tower. SINR, handover logic, and KPI logging all read from this cache. This models reality correctly — the LoS/NLoS state (shadow fading) changes on the order of seconds, not milliseconds.
+
+#### Bug 2: Ping-Pong Handovers
+**Problem**: Even with TTT (Time-to-Trigger), the UE was bouncing A→B→A in consecutive ticks because the cooldown wasn't being applied correctly (dt was passed in seconds but compared against milliseconds).
+
+**Fix**: Two-layer anti-ping-pong strategy:
+1. **TTT (200 ms)**: A3 condition must hold continuously for 200 ms before HO fires
+2. **Post-HO Cooldown (5 s)**: After any handover, ALL new HO attempts are blocked for 5 seconds (standard 3GPP practice)
+
+#### What the Remaining Handovers Mean
+The simulation still shows several HOs. Some of these (spaced ~6 s apart) are the UE spending time right at a cell edge where the two towers trade dominance as the UE drifts. This is realistic — in real networks, a UE lingering at a cell boundary does experience frequent handovers. Production networks handle this with larger A3 offsets and longer cooldowns tuned to the specific deployment.
+
+---
+
 ## 🏗️ Project Architecture
 
 ```

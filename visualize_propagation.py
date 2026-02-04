@@ -7,7 +7,9 @@ This script creates plots to help visualize how radio signals degrade with dista
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('/home/claude/5g-cell-tower-sim/src')
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from core.propagation import (
     PropagationEnvironment,
@@ -16,7 +18,6 @@ from core.propagation import (
     ThreeGPP_38_901_UMa,
     calculate_received_power
 )
-
 
 def plot_path_loss_comparison():
     """

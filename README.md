@@ -587,47 +587,6 @@ Compared against 3GPP 38.901 reference:
 
 ---
 
-## 📊 Visualizations & Output Artifacts
-
-The simulator generates professional-grade plots and dashboards:
-
-### Core Visualizations
-
-- **`comprehensive_dashboard.png`** — 4-panel summary:
-  - Scenario comparison (Baseline, Peak Hour, Tower Failure, Traffic Surge)
-  - KPI heatmaps (SINR, throughput, handover count)
-  - CDF distributions for each scenario
-  - Real-time legend and parameter annotations
-
-- **`classical_vs_rl_comparison.png`** — RL Handover Improvement:
-  - Side-by-side SINR/handover metrics (Classical A3 vs RL Agent)
-  - Performance delta visualization
-  - Hyperparameter summary (learning rate, exploration ε)
-
-- **`traffic_patterns.png`** — Traffic Forecasting Results:
-  - Historical traffic vs LSTM predictions
-  - Accuracy metrics and MSE/MAE
-  - 24h cycle with daily/weekly patterns
-
-- **`path_loss_comparison.png`** — Propagation Model Accuracy:
-  - FSPL vs Okumura-Hata vs 3GPP 38.901
-  - Distance-based attenuation curves
-  - Model comparison at different frequencies
-
-- **`coverage_map.png`** — Network Coverage:
-  - Cell tower locations and sector boundaries
-  - RSRP/SINR heatmap overlay
-  - User equipment trajectories
-  - Handover event markers
-
-### Data Outputs
-All results exported to `results/` with timestamps:
-- CSV logs: KPI time series, event logs, handover records
-- Pickle files: Trained LSTM model, RL agent weights
-- JSON: Scenario parameters, simulation metadata
-
----
-
 ## 🤝 Contributing & Future Work
 
 ### How You Can Contribute

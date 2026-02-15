@@ -618,18 +618,6 @@ Compared against 3GPP 38.901 reference:
    - Add parallel simulation for scenario batching
    - Implement GPU acceleration for large networks (1000+ UEs)
 
-#### Documentation & Tutorials
-- Write step-by-step scenario design guide
-- Create video tutorials for dashboard interpretation
-- Document KPI formulas with derivations
-- Add research paper recommendations by topic
-
-#### Testing & Validation
-- Expand [tests/](tests/) with pytest coverage (currently minimal)
-- Add benchmark tests for scaling (100→10,000 UEs)
-- Create reproducible test scenarios with fixed random seeds
-- Validate against real 5G network measurements
-
 #### New Scenarios & Use Cases
 - **Rural Coverage**: Lower tower density, longer propagation distances
 - **Indoor Hotspot**: High-density microcells, penetration loss
